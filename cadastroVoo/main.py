@@ -2,7 +2,7 @@ from gerenciamento import Gerenciamento
 from datetime import date
 
 # Funções
-def cadastroPerguntas(companhia):
+def cadastroVoo(companhia):
     # Dados do voo
     numeroVoo = int(input("Digite o número do voo: "))
     diaMesAno = input("Digite a data do voo [DD/MM/AAAA]:")
@@ -11,7 +11,6 @@ def cadastroPerguntas(companhia):
 
     # Tratamendo da data
     data = diaMesAno.split("/")
-    data.sort(reverse=True)
 
     dados = {
         "numeroVoo": numeroVoo,
@@ -28,16 +27,26 @@ def cadastroPerguntas(companhia):
     else:
         print("Falha no cadastro!")
 
-# Terminar cadastroDeAeroport()
 def cadastroDeAeroporto(companhia):
     # Dados do aeroporto
     cidade = input("Digite a cidade do aeroporto: ")
     estado = input("Digite o estado do aeroporto: ")
 
-    aeroporto = "{cidade}-{estado}"
-
-    return aeroporto
+    dados = {
+        "cidade": cidade,
+        "estado": estado
+    }
 
 # Código
-companhiaUm = Gerenciamento("Azul")
-cadastroPerguntas(companhiaUm)
+companhiaUm = Gerenciamento("Verde")
+
+print("")
+print("Sejam Bem-Vindo(a)! Essa é a lista de funções que você pode executar")
+print("")
+print("[1] Cadastrar voo")
+print("")
+funcao = int(input("Selecione a função que deseja executar: "))
+
+match funcao:
+    case 1:
+        cadastroVoo(companhiaUm)

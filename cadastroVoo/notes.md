@@ -35,3 +35,6 @@
 - [sair]
 
 > os dados do voos (voos cadastrados) deverão ser armazedados permanentemente
+
+## O que fazer
+- rever ordem das datas
