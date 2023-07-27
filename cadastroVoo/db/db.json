@@ -1,1 +1,40 @@
-[{"companhia": "Azul", "voos": [{"numeroVoo": 12, "dataVoo": "0012-12-12", "origemVoo": 12, "destinoVoo": 12, "vagasVoo": 100}, {"numeroVoo": 2, "dataVoo": "2006-04-28", "origemVoo": 1, "destinoVoo": 2, "vagasVoo": 100}]}, {"companhia": "Verde", "voos": [{"numeroVoo": 12, "dataVoo": "0012-12-12", "origemVoo": 12, "destinoVoo": 12, "vagasVoo": 100}, {"numeroVoo": 2, "dataVoo": "2006-04-16", "origemVoo": 1, "destinoVoo": 2, "vagasVoo": 100}, {"numeroVoo": 3, "dataVoo": "2006-08-02", "origemVoo": 1, "destinoVoo": 2, "vagasVoo": 100}]}]
+{
+    "companhias": [
+        {
+            "companhia": "Azul",
+            "voos": [
+                {
+                    "numeroVoo": 1,
+                    "dataVoo": "2023-07-27",
+                    "origemVoo": {
+                        "id": 2,
+                        "cidade": "Rio de Janeiro",
+                        "estado": "RJ"
+                    },
+                    "destinoVoo": {
+                        "id": 1,
+                        "cidade": "Itubera",
+                        "estado": "BA"
+                    },
+                    "vagasOcupadas": [
+                        22,
+                        10,
+                        50
+                    ]
+                }
+            ]
+        }
+    ],
+    "destinos": [
+        {
+            "id": 1,
+            "cidade": "Itubera",
+            "estado": "BA"
+        },
+        {
+            "id": 2,
+            "cidade": "Rio de Janeiro",
+            "estado": "RJ"
+        }
+    ]
+}

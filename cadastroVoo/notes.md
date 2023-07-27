@@ -12,7 +12,7 @@
 ## Funcionalidades
 
 > Menu
-- ver voos cadastrados
+- ver voos cadastrados (OK)
     - número do voo
     - data do voo
     - origem do voo
@@ -22,7 +22,9 @@
         - vai perguntar um número para o usuário e dizer se essa cadeira está livre ou ocupada
     - números de vagas livres
 
-- cadastrar novos voos [função]
+- adicionar destinos para os voos [função] (OK)
+
+- cadastrar novos voos [função] (OK)
     - perguntar ao usuário os dados dos voos e guardá-los. (dados acima) [função]
 
 - adicionar passageiro a um voo [função]

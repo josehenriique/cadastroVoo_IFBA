@@ -18,14 +18,15 @@ class Gerenciamento:
         
         hasCompanhia = False
 
-        for item in content:
+        for item in content["companhias"]:
             if item['companhia'] == dado["companhia"]:
                 hasCompanhia = True
+                break
             else:
                 hasCompanhia = False
         
         if not hasCompanhia:
-            content.append(dado)
+            content["companhias"].append(dado)
         
         with open(path, "w") as file:
             json.dump(content, file)
@@ -45,9 +46,11 @@ class Gerenciamento:
 
         if emptyFileResponse:
             with open(self.dbPath, 'w') as file:
-                 json.dump([], file)
-
-                 
+                 json.dump({
+                    "companhias": [],
+                    "destinos": []
+                 }, file)
+    
         dados = {
             "companhia": self.name,
             "voos": []
@@ -59,21 +62,34 @@ class Gerenciamento:
         self.db = self._readDataBase(self.dbPath)
 
     def cadastroVoo(self, info):
-        
+                
+        companhias = self.db
+
+        # Atualização do número do voo de forma automática
+        indice = 0
+
+        for companhia in companhias["companhias"]:
+            if companhia["companhia"] == self.name:
+                quantidadeDeVoos = len(companhia["voos"])
+                indice = quantidadeDeVoos
+
+                break 
+
         voo = {
-            "numeroVoo" : info['numeroVoo'],
+            "numeroVoo" : indice + 1,
             "dataVoo" : date(int(info['dataVoo'][2]), int(info['dataVoo'][1]), int(info['dataVoo'][0])).isoformat(),
             "origemVoo" : info['origem'],
             "destinoVoo" : info['destino'],
-            "vagasVoo" : 100,
+            "vagasOcupadas" : [],
         }
-        
-        companhias = self.db
 
-        for companhia in companhias:
-            if companhia["companhia"] == self.name:
+        # Atualização dos voos na estrutura de dados
+
+        for companhia in companhias["companhias"]:
+            if companhia["companhia"] == self.name: 
+
                 voosUpdate = companhia
-                voosUpdate["voos"].append(voo)          
+                voosUpdate["voos"].append(voo)
                 break
 
         # Reescreve os voos atualizados no arquivo 
@@ -81,4 +97,104 @@ class Gerenciamento:
             json.dump(companhias, file)
             return {"voo": voo, "verification": True}
     
-    # def cadastroAeroporto(self, info):
+    def cadastroAeroporto(self, info):
+        destinos = self.db
+
+        # Caso não tenha nenhuma destino
+        if destinos["destinos"] == []:
+
+            indice = 1
+            dados = {
+                "id": indice,
+                "cidade": info["cidade"],
+                "estado": info["estado"]
+            }
+
+            destinos["destinos"].append(dados)
+
+            with open(self.dbPath, 'w') as file:
+                json.dump(destinos, file)
+                return {"destino": dados, "verification": True}
+        
+        # Verificação para não haver destinos iguais
+        hasDestino = False
+
+        for item in destinos["destinos"]:
+            if item["cidade"] == info["cidade"]:
+                hasDestino = True
+                break
+            else:
+                hasDestino = False
+        
+        # Atualização de um novo destino
+        if not hasDestino:
+
+            newIndice = int(destinos["destinos"][-1]["id"]) + 1
+        
+            dados = {
+                "id": newIndice,
+                "cidade": info["cidade"],
+                "estado": info["estado"]
+            }
+            
+            destinos["destinos"].append(dados)
+            
+            with open(self.dbPath, 'w') as file:
+                json.dump(destinos, file)
+                return {"destino": dados, "verification": True}
+    
+    def getDestinos(self):
+        destinos = self.db["destinos"]
+
+        return destinos
+
+    def getVoos(self):
+
+        companhias = self.db
+
+        for companhia in companhias["companhias"]:
+            if companhia["companhia"] == self.name:
+                voos = companhia["voos"]
+                break
+
+        return voos
+    
+    def cadastrarAssento(self, info):
+
+        db = self.db
+
+        numVoo = info["numVoo"]
+        assentoEscolhido = info["assentoEscolhido"]
+
+        for companhia in db["companhias"]:
+            if companhia["companhia"] == self.name:
+                
+                vagasUpdate = companhia["voos"][numVoo - 1]
+                vagasUpdate["vagasOcupadas"].append(assentoEscolhido)
+
+                break
+        
+        
+        with open(self.dbPath, "w") as file:
+            json.dump(db, file)
+            return {"verification": True}
+        
+    def getVoosDoDia(self):
+        
+        companhias = self.db
+        dataAtual = str(date.today())
+
+        print("Data atual: ", dataAtual)
+        for companhia in companhias["companhias"]:
+            print("")
+            print(companhia["companhia"], ":")
+            print("")
+
+            for voo in companhia["voos"]:
+                if voo["dataVoo"] == dataAtual:
+                    print("ID do Voo: ", voo["numeroVoo"])
+                    print("Data:", voo["dataVoo"])
+                    print("Rota: {},{} -> {},{}".format(voo["origemVoo"]["cidade"], voo["origemVoo"]["estado"], voo["destinoVoo"]["cidade"], voo["destinoVoo"]["estado"]))
+                    print("")
+                    print("")
+        
