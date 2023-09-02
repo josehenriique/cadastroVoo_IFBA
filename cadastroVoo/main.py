@@ -1,5 +1,8 @@
 from gerenciamento import Gerenciamento
 from datetime import date
+import os
+import json
+import re
 
 # Funções
 def cadastroVoo(companhia):
@@ -13,6 +16,27 @@ def cadastroVoo(companhia):
 
     diaMesAno = input("Digite a data do voo [DD/MM/AAAA]:")
 
+    # Tratamendo da data
+    data = diaMesAno.split("/")
+
+    for number in data:
+        if not number.isnumeric():
+            print("")
+            print("Data incorreta")
+            return
+        
+    if len(data[0]) != 2:
+        print("Formatação errada da data")
+        return
+
+    if len(data[1]) != 2:
+        print("Formatação errada da data")
+        return
+
+    if len(data[2]) != 4:
+        print("Formatação errada da data")  
+        return
+
     print("")
     print("Escolha o ID do destino de origem e de chegada")
     showDestinos(companhia)
@@ -21,14 +45,17 @@ def cadastroVoo(companhia):
     origem = int(input("Escolha do ponto de origem: "))
     destino = int(input("Escolha do ponto de destino: "))
 
-    # Tratamendo da data
-    data = diaMesAno.split("/")
+    dados = {}
 
-    dados = {
-        "dataVoo": data,
-        "origem": destinos[origem - 1],
-        "destino": destinos[destino - 1],
-    }
+    try: 
+        dados = {
+            "dataVoo": data,
+            "origem": destinos[origem - 1],
+            "destino": destinos[destino - 1],
+        }
+    except:
+        print("")
+        print("Destinos não existentes")
 
     response = companhia.cadastroVoo(dados)
 
@@ -36,12 +63,33 @@ def cadastroVoo(companhia):
         print("")
         print("Voo cadastrado com sucesso!")
     else:
-        print("Falha no cadastro!")
+        print("")
+        print("Valores inválido!")
 
 def cadastroDeAeroporto(companhia):
     # Dados do aeroporto
-    cidade = input("Digite a cidade (sem acentos): ")
-    estado = input(f"Digite o estado de {cidade} (sem acentos): ")
+    cidade = input("Digite a cidade (sem acentos ou 'ç'): ")
+    estado = input(f"Digite o estado de {cidade} (sem acentos, ex.: BA, RJ, SP, TO...): ").upper()
+
+    def acentos(string):
+        padrao = re.compile(r'[^\x00-\x7F]')
+        resultado = padrao.search(string)
+
+        if resultado:
+            return True
+        else:
+            return False
+    
+    if acentos(cidade):
+        print("")
+        print("Uso de caracteres inválidos no espaço 'cidade'.")
+        return
+    
+    if acentos(estado):
+        print("")
+        print("Uso de caracteres inválidos no espaço 'estado'.")
+        return
+
 
     dados = {
         "cidade": cidade,
@@ -53,10 +101,17 @@ def cadastroDeAeroporto(companhia):
     if response["verification"]:
         print("")
         print("Aeroporto Cadastrado!")
+    else:
+        print("")
+        print("Falha no cadastro de novo aeroporto!")
 
 def reservaAssento(companhia):
 
     voos = companhia.getVoos()
+
+    if voos == []:
+        print("Não há voos cadastrados, por favor, adicione voos primeiro!")
+        return
 
     for voo in voos:
         print("ID do Voo: ", voo["numeroVoo"])
@@ -64,8 +119,24 @@ def reservaAssento(companhia):
         print("{},{} -> {},{}".format(voo["origemVoo"]["cidade"], voo["origemVoo"]["estado"], voo["destinoVoo"]["cidade"], voo["destinoVoo"]["estado"]))
         print("")
 
-    numVoo = int(input("Qual o número do voo (ID): "))
-    vagasOcupadas = voos[numVoo - 1]["vagasOcupadas"]
+    numVoo = None
+
+    try:
+        numVoo = int(input("Qual o número do voo (ID): "))
+    except:
+        print("")
+        print("Digite um valor inteiro")
+        return
+    
+    vagasOcupadas = None
+
+    try:
+        vagasOcupadas = voos[numVoo - 1]["vagasOcupadas"]
+    except:
+        print("")
+        print("Esse aeroporto não existe")
+        return
+
 
     if len(vagasOcupadas) == 100:
         print("Voo lotado!")
@@ -86,7 +157,12 @@ def reservaAssento(companhia):
     escolha = False
 
     while escolha == False:
-        assentoEscolhido = int(input("Escolha um assento que não esteja ocupado [1-100]: "))
+        try:
+            assentoEscolhido = int(input("Escolha um assento que não esteja ocupado [1-100]: "))
+        except:
+            print("")
+            print("Valor inválido")
+            return
 
         # Validação da escolha do assento
 
@@ -99,9 +175,11 @@ def reservaAssento(companhia):
                 escolha = True
             else:
                 for item in vagasOcupadas:
+                    
                     if item == assentoEscolhido:
                         print("Assento já escolhido!")
                         escolha = False
+                        break
                         
                     else:
                         escolha = True
@@ -129,25 +207,73 @@ def voosDoDia(companhia):
 
     companhia.getVoosDoDia()
 
+def voosCompanhia(companhia):
+    voos = companhia.getVoos()
+
+    for voo in voos:
+        print("ID do Voo: ", voo["numeroVoo"])
+        print("Data: ", voo["dataVoo"])
+        print("{},{} -> {},{}".format(voo["origemVoo"]["cidade"], voo["origemVoo"]["estado"], voo["destinoVoo"]["cidade"], voo["destinoVoo"]["estado"]))
+        print("")
+
+def showCompanhias():
+    dbFile = os.path.join("db", "db.json")
+
+    try:
+        companhias = None
+
+        with open(dbFile, 'r') as file:
+            companhias = json.load(file)
+
+        print("")
+        print("Companhias: ")
+        for companhia in companhias["companhias"]:
+            print(companhia["companhia"])
+        print("")
+    except:
+        return
+
 # Código
 
 run = True
-infoCompanhia = input("Informe a companhia para o painel de controle: ")
+
+showCompanhias()
+
+# Escolhendo a companhia
+infoCompanhia = None
+verification_infoCompanhia = False
+
+while verification_infoCompanhia == False:
+    
+    if infoCompanhia == None or infoCompanhia.strip() == "":
+        infoCompanhia = input("Informe a companhia para o painel de controle: ").upper()
+    else:
+        verification_infoCompanhia: True
+        break
+        
+companhia = Gerenciamento(infoCompanhia)
 
 while run == True:
-    companhia = Gerenciamento(infoCompanhia)
 
     print("--------------------------------------------------------------------")
     print("Sejam Bem-Vindo(a)! Essa é a lista de funções que você pode executar")
     print("")
     print("[1] Cadastrar voo")
     print("[2] Cadastrar aeroporto")
-    print("[3] Mostrar Destinos")
+    print("[3] Mostrar destinos")
     print("[4] Reserva de assentos")
-    print("[5] Voos do Dia")
-    print("[6] Sair")
+    print("[5] Voos da companhia")
+    print("[6] Voos do dia")
+    print("[7] Sair")
     print("")
-    funcao = int(input("Selecione a função que deseja executar: "))
+
+    funcao = None
+
+    try:
+        funcao = int(input("Selecione a função que deseja executar: "))
+    except:
+        print("")
+        print("Digite um valor inteiro")
     print("--------------------------------------------------------------------")
 
     match funcao:
@@ -160,6 +286,16 @@ while run == True:
         case 4:
             reservaAssento(companhia)
         case 5:
-            voosDoDia(companhia)
+            voosCompanhia(companhia)
         case 6:
+            voosDoDia(companhia)
+        case 7:
             run = False
+        case _:
+            print("Não existe esse indice")
+
+
+# Tratados
+# cadastroDeVoos()
+# cadastroDeAeroportos()
+# resevarAssentos()

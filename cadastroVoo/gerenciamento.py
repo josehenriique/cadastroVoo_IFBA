@@ -39,8 +39,13 @@ class Gerenciamento:
 
     def __init__(self, name):
         self.name = name
+
         # Caminho do Banco de Dados
         self.dbPath = os.path.join("db", "db.json")
+
+        if not os.path.exists(self.dbPath):
+            with open(self.dbPath, 'w') as file:
+                file.write("")
 
         emptyFileResponse = self._emptyFile(self.dbPath)
 
@@ -74,14 +79,19 @@ class Gerenciamento:
                 indice = quantidadeDeVoos
 
                 break 
+        
+        voo = {}
 
-        voo = {
-            "numeroVoo" : indice + 1,
-            "dataVoo" : date(int(info['dataVoo'][2]), int(info['dataVoo'][1]), int(info['dataVoo'][0])).isoformat(),
-            "origemVoo" : info['origem'],
-            "destinoVoo" : info['destino'],
-            "vagasOcupadas" : [],
-        }
+        try:
+            voo = {
+                "numeroVoo" : indice + 1,
+                "dataVoo" : date(int(info['dataVoo'][2]), int(info['dataVoo'][1]), int(info['dataVoo'][0])).isoformat(),
+                "origemVoo" : info['origem'],
+                "destinoVoo" : info['destino'],
+                "vagasOcupadas" : [],
+            }
+        except:
+            return {"voo": voo, "verification": False}
 
         # Atualização dos voos na estrutura de dados
 
@@ -100,49 +110,53 @@ class Gerenciamento:
     def cadastroAeroporto(self, info):
         destinos = self.db
 
-        # Caso não tenha nenhuma destino
-        if destinos["destinos"] == []:
+        try:
+            # Caso não tenha nenhuma destino
+            if destinos["destinos"] == []:
 
-            indice = 1
-            dados = {
-                "id": indice,
-                "cidade": info["cidade"],
-                "estado": info["estado"]
-            }
+                indice = 1
+                dados = {
+                    "id": indice,
+                    "cidade": info["cidade"],
+                    "estado": info["estado"]
+                }
 
-            destinos["destinos"].append(dados)
+                destinos["destinos"].append(dados)
 
-            with open(self.dbPath, 'w') as file:
-                json.dump(destinos, file)
-                return {"destino": dados, "verification": True}
-        
-        # Verificação para não haver destinos iguais
-        hasDestino = False
-
-        for item in destinos["destinos"]:
-            if item["cidade"] == info["cidade"]:
-                hasDestino = True
-                break
-            else:
-                hasDestino = False
-        
-        # Atualização de um novo destino
-        if not hasDestino:
-
-            newIndice = int(destinos["destinos"][-1]["id"]) + 1
-        
-            dados = {
-                "id": newIndice,
-                "cidade": info["cidade"],
-                "estado": info["estado"]
-            }
+                with open(self.dbPath, 'w') as file:
+                    json.dump(destinos, file)
+                    return {"destino": dados, "verification": True}
             
-            destinos["destinos"].append(dados)
+            # Verificação para não haver destinos iguais
+            hasDestino = False
+
+            for item in destinos["destinos"]:
+                if item["cidade"] == info["cidade"]:
+                    hasDestino = True
+                    break
+                else:
+                    hasDestino = False
             
-            with open(self.dbPath, 'w') as file:
-                json.dump(destinos, file)
-                return {"destino": dados, "verification": True}
-    
+            # Atualização de um novo destino
+            if not hasDestino:
+
+                newIndice = int(destinos["destinos"][-1]["id"]) + 1
+            
+                dados = {
+                    "id": newIndice,
+                    "cidade": info["cidade"],
+                    "estado": info["estado"]
+                }
+                
+                destinos["destinos"].append(dados)
+                
+                with open(self.dbPath, 'w') as file:
+                    json.dump(destinos, file)
+                    return {"destino": dados, "verification": True}
+            
+        except:
+            return {"destino": dados, "verification": False}
+
     def getDestinos(self):
         destinos = self.db["destinos"]
 
@@ -197,4 +211,3 @@ class Gerenciamento:
                     print("Rota: {},{} -> {},{}".format(voo["origemVoo"]["cidade"], voo["origemVoo"]["estado"], voo["destinoVoo"]["cidade"], voo["destinoVoo"]["estado"]))
                     print("")
                     print("")
-        
