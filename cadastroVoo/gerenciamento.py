@@ -198,6 +198,8 @@ class Gerenciamento:
         companhias = self.db
         dataAtual = str(date.today())
 
+        hasVoo = False
+
         print("Data atual: ", dataAtual)
         for companhia in companhias["companhias"]:
             print("")
@@ -206,8 +208,13 @@ class Gerenciamento:
 
             for voo in companhia["voos"]:
                 if voo["dataVoo"] == dataAtual:
+                    hasVoo = True
                     print("ID do Voo: ", voo["numeroVoo"])
                     print("Data:", voo["dataVoo"])
                     print("Rota: {},{} -> {},{}".format(voo["origemVoo"]["cidade"], voo["origemVoo"]["estado"], voo["destinoVoo"]["cidade"], voo["destinoVoo"]["estado"]))
                     print("")
                     print("")
+        
+        if not hasVoo:
+            print("")
+            print("Não há voos hoje!")
